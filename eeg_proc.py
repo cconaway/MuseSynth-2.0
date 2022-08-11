@@ -3,13 +3,36 @@ import numpy as np
 import math
 import time
 
-def send_to_client(client, address, *args):
-    client.send(address, args[0])
-    time.sleep(1)
+class ClientUtility(object):
+
+    def send_to_clients(self, clients, send_address, output):
+        for client in clients:
+            client.send_message('{}'.format(send_address), output)
+            time.sleep(1)
+            
+class RangeLimiter(object):
+
+    def __init__(self, input_range, output_range):
+        self.outmax = output_range[1]
+        self.outmin = output_range[0]
+        self.inmax = input_range[1]
+        self.inmin = input_range[0]
+
+        self.input_range = (self.inmax - self.inmin)
+        self.output_range = (self.outmax - self.outmin)
+
+    def squeeze(self, data):
+        output = [(((d-self.inmin) * self.output_range) / self.input_range) + self.outmin for d in data]
+        return output
+
+
 
 class MotionHandler(object):
 
-    def __init__(self, window=30, data_streams=3, send_address='acc_xyz'):
+    def __init__(self, input_range, output_range, window=30, data_streams=3, send_address='/acc_xyz'):
+        self.client_utility = ClientUtility()
+        self.rangelimiter = RangeLimiter(input_range, output_range)
+
         self.send_address = send_address
         self.window = window
         self.directions = np.arange(data_streams)
@@ -19,8 +42,7 @@ class MotionHandler(object):
         for i in range(data_streams):
             self.ques.append(collections.deque())
 
-    def run(self, address: str, client, *args):
-        
+    def run(self, address: str, fixed_args, *args):
 
         for d, que in zip(self.directions, self.ques):
             if len(self.ques[0]) == self.window:
@@ -29,24 +51,35 @@ class MotionHandler(object):
 
             else:
                 que.append(args[d])
-
             self.output[d]= sum(que)/len(que)
 
-        client[0].send_message('{}'.format(self.send_address), self.output)
-        time.sleep(1)
+        self.output = self.rangelimiter.squeeze(self.output)
+        self.client_utility.send_to_clients(fixed_args[0], self.send_address, self.output)
+        #clients[0].send_message('{}'.format(self.send_address), self.output)
+        #time.sleep(1)
+
+
 
 class RawEEGHandler(object):
     
     def __init__(self):
-        self.send_address = 'raw_eeg'
+        self.send_address = '/raw_eeg'
+        self.client_utility = ClientUtility()
 
-    def run(self, address: str, client, *args):
-        client[0].send_message('{}'.format(self.send_address), args)
+    def run(self, address: str, fixed_args, *args):
+        self.client_utility.send_to_clients(fixed_args[0], self.send_address, args)
+        #client[0].send_message('{}'.format(self.send_address), args)
+
 
 
 class WaveHandler(object):
 
-    def __init__(self, window=30):
+    def __init__(self, input_range, output_range, window=30):
+        self.client_utility = ClientUtility()
+        self.rangelimiter = RangeLimiter(input_range, output_range)
+
+        self.send_address = '/relative_wave'
+
         self.hsi = [-1,-1,-1,-1]
         self.waves = [0,1,2,3,4]
         self.absolute_wavepower = [-1,-1,-1,-1,-1]
@@ -61,15 +94,8 @@ class WaveHandler(object):
         self.hsi = args
 
     def run(self, address: str, fixed_args, *args):
-        client = fixed_args[0]
         wave = fixed_args[1]
         output = [-1,-1,-1,-1,-1]
-        # f f f f wave
-
-        #print('WAVE', wave)
-        #print('CLIENT', client)
-
-        #Make this into multiple splits for other waves.
 
         self.absolute_wavepower[wave] = self._sum_ifsignal(args)
         self.relative_wavepower[wave] = self._compute_relative(wave, self.absolute_wavepower)
@@ -81,8 +107,10 @@ class WaveHandler(object):
             else:
                 que.append(self.relative_wavepower[w])
 
-            output[w] = sum(que)/len(que)
-        client.send_message('relative_wave', output)
+            output[w] = sum(que)/len(que) #This is dumb
+
+        output = self.rangelimiter.squeeze(output)
+        self.client_utility.send_to_clients(fixed_args[0], self.send_address, output)
 
     def _sum_ifsignal(self, args):
         sumVal = 0
@@ -92,6 +120,8 @@ class WaveHandler(object):
             if (self.hsi[i] == 1 or 2):
                 sumVal += args[i]
                 n += 1
+
+        #put in if there is no signal.
         return sumVal/n
 
     @staticmethod
