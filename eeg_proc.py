@@ -6,8 +6,8 @@ import time
 class ClientUtility(object):
 
     def send_to_clients(self, clients, send_address, output):
-        for client in clients:
-            client.send_message('{}'.format(send_address), output)
+        for i, client in zip(enumerate(clients), clients):
+            client.send_message('{}{}'.format(send_address, i), output)
             time.sleep(1)
             
 class RangeLimiter(object):
