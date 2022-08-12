@@ -8,27 +8,26 @@ from pythonosc.udp_client import SimpleUDPClient
 
 #Internal
 from eeg_proc import MotionHandler, RawEEGHandler, WaveHandler
-from range_constants import ACC_INPUT, ACC_OUTPUT, GYRO_INPUT, GYRO_OUTPUT, ALLWAVE_INPUT, ALLWAVE_OUPUT
+from constants import ACC_INPUT, ACC_OUTPUT, GYRO_INPUT, GYRO_OUTPUT, ALLWAVE_INPUT, ALLWAVE_OUPUT
+from eeg_argparse import EEG_argparse
+
 
 def main():
-    server_ip = '169.254.40.240'
-    server_port = 8000
+    parser = EEG_argparse()
+    server_port, server_ip = parser.run_parser() #Check Constants for Defaults
 
     #Fill with clients if you want
     clients = [SimpleUDPClient('127.0.0.1', 8001)]
 
     #######################################################
-
     dispatch = Dispatcher()
-
-    acc = MotionHandler(input_range=ACC_INPUT, output_range=ACC_OUTPUT)
+    
+    acc = MotionHandler(input_range=ACC_INPUT, output_range=ACC_OUTPUT, window=2)
     dispatch.map("/muse/acc", acc.run, clients)
 
-    
     gyro = MotionHandler(send_address='/gyro_xyz', input_range=GYRO_INPUT, output_range=GYRO_OUTPUT)
     dispatch.map("/muse/gyro", gyro.run, clients)
 
-    
     raw_eeg = RawEEGHandler()
     dispatch.map("/muse/eeg", raw_eeg.run, clients)
     

@@ -6,8 +6,10 @@ import time
 class ClientUtility(object):
 
     def send_to_clients(self, clients, send_address, output):
-        for i, client in zip(enumerate(clients), clients):
-            client.send_message('{}{}'.format(send_address, i), output)
+        for i, client in enumerate(clients):
+            #print('{}_{}_{}'.format(client, send_address, i), output)
+            
+            client.send_message('{}_{}'.format(send_address, i), output)
             time.sleep(1)
             
 class RangeLimiter(object):
@@ -43,7 +45,8 @@ class MotionHandler(object):
             self.ques.append(collections.deque())
 
     def run(self, address: str, fixed_args, *args):
-
+        
+        args = self.rangelimiter.squeeze(args)
         for d, que in zip(self.directions, self.ques):
             if len(self.ques[0]) == self.window:
                 que.popleft()
@@ -53,11 +56,7 @@ class MotionHandler(object):
                 que.append(args[d])
             self.output[d]= sum(que)/len(que)
 
-        self.output = self.rangelimiter.squeeze(self.output)
         self.client_utility.send_to_clients(fixed_args[0], self.send_address, self.output)
-        #clients[0].send_message('{}'.format(self.send_address), self.output)
-        #time.sleep(1)
-
 
 
 class RawEEGHandler(object):
@@ -68,7 +67,6 @@ class RawEEGHandler(object):
 
     def run(self, address: str, fixed_args, *args):
         self.client_utility.send_to_clients(fixed_args[0], self.send_address, args)
-        #client[0].send_message('{}'.format(self.send_address), args)
 
 
 
@@ -90,6 +88,8 @@ class WaveHandler(object):
         for i in range(len(self.absolute_wavepower)):
             self.ques.append(collections.deque())
 
+        self.count = 0
+
     def run_hsi(self, address: str, *args):
         self.hsi = args
 
@@ -97,7 +97,14 @@ class WaveHandler(object):
         wave = fixed_args[1]
         output = [-1,-1,-1,-1,-1]
 
-        self.absolute_wavepower[wave] = self._sum_ifsignal(args)
+
+        data_from_signal = self._sum_ifsignal(args)
+        if data_from_signal == 0.001:
+            self.absolute_wavepower[wave] = 0.1
+        else:
+            self.absolute_wavepower[wave] = data_from_signal
+
+
         self.relative_wavepower[wave] = self._compute_relative(wave, self.absolute_wavepower)
 
         for w, que in zip(self.waves, self.ques):
@@ -106,8 +113,7 @@ class WaveHandler(object):
                 que.append(self.relative_wavepower[w])
             else:
                 que.append(self.relative_wavepower[w])
-
-            output[w] = sum(que)/len(que) #This is dumb
+            output[w] = sum(que)/len(que) 
 
         output = self.rangelimiter.squeeze(output)
         self.client_utility.send_to_clients(fixed_args[0], self.send_address, output)
@@ -117,15 +123,18 @@ class WaveHandler(object):
         n = 0
 
         for i in range(4):
-            if (self.hsi[i] == 1 or 2):
+            if (self.hsi[i] == 1):
                 sumVal += args[i]
                 n += 1
 
-        #put in if there is no signal.
-        return sumVal/n
+        if n == 0:
+            return 0.001
+        else:
+            return sumVal/n
 
     @staticmethod
     def _compute_relative(wave, absolute_wavepower):
+
         return (math.pow(10, absolute_wavepower[wave]) / 
             (math.pow(10, absolute_wavepower[0]) +
             math.pow(10, absolute_wavepower[1]) +
