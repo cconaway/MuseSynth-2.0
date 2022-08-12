@@ -14,7 +14,7 @@ from eeg_argparse import EEG_argparse
 
 def main():
     parser = EEG_argparse()
-    server_port, server_ip, msg_prefix = parser.run_parser() #Check Constants for Defaults
+    server_ip, server_port, msg_prefix = parser.run_parser() #Check Constants for Defaults
 
     #Fill with clients if you want
     clients = [SimpleUDPClient('127.0.0.1', 8001)]
@@ -47,6 +47,8 @@ def main():
     server = osc_server.ThreadingOSCUDPServer((server_ip, server_port), dispatch)
     print('Serving on {}:{}'.format(server_ip, server_port))
     print('Sending Messages to {}'. format(clients))
+    if msg_prefix != None:
+        print('Prefixing Messages with {}'.format(msg_prefix))
     server.serve_forever()
 
 def shutdown():
