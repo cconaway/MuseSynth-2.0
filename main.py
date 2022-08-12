@@ -14,7 +14,7 @@ from eeg_argparse import EEG_argparse
 
 def main():
     parser = EEG_argparse()
-    server_port, server_ip = parser.run_parser() #Check Constants for Defaults
+    server_port, server_ip, msg_prefix = parser.run_parser() #Check Constants for Defaults
 
     #Fill with clients if you want
     clients = [SimpleUDPClient('127.0.0.1', 8001)]
@@ -22,16 +22,16 @@ def main():
     #######################################################
     dispatch = Dispatcher()
     
-    acc = MotionHandler(input_range=ACC_INPUT, output_range=ACC_OUTPUT, window=2)
+    acc = MotionHandler(input_range=ACC_INPUT, output_range=ACC_OUTPUT, window=2, msg_prefix=msg_prefix)
     dispatch.map("/muse/acc", acc.run, clients)
 
-    gyro = MotionHandler(send_address='/gyro_xyz', input_range=GYRO_INPUT, output_range=GYRO_OUTPUT)
+    gyro = MotionHandler(send_address='/gyro_xyz', input_range=GYRO_INPUT, output_range=GYRO_OUTPUT, msg_prefix=msg_prefix)
     dispatch.map("/muse/gyro", gyro.run, clients)
 
-    raw_eeg = RawEEGHandler()
+    raw_eeg = RawEEGHandler(msg_prefix=msg_prefix)
     dispatch.map("/muse/eeg", raw_eeg.run, clients)
     
-    wavehandler = WaveHandler(input_range=ALLWAVE_INPUT, output_range=ALLWAVE_OUPUT)
+    wavehandler = WaveHandler(input_range=ALLWAVE_INPUT, output_range=ALLWAVE_OUPUT, msg_prefix=msg_prefix)
     dispatch.map("/muse/elements/horseshoe", wavehandler.run_hsi)
     wave_names = [('alpha_absolute',0),         
                     ('beta_absolute', 1),

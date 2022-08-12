@@ -3,13 +3,21 @@ import numpy as np
 import math
 import time
 
+from .eeg_fft import EEG_fft
+
+
 class ClientUtility(object):
 
+    def __init__(self, msg_prefix):
+        self.msg_prefix = msg_prefix
+
     def send_to_clients(self, clients, send_address, output):
-        for i, client in enumerate(clients):
+        for client in clients:
             #print('{}_{}_{}'.format(client, send_address, i), output)
-            
-            client.send_message('{}_{}'.format(send_address, i), output)
+            if self.msg_prefix == None: 
+                client.send_message('{}'.format(send_address), output)
+            else:
+                client.send_message('{}{}'.format(self.msg_prefix, send_address), output)
             time.sleep(1)
             
 class RangeLimiter(object):
@@ -31,8 +39,8 @@ class RangeLimiter(object):
 
 class MotionHandler(object):
 
-    def __init__(self, input_range, output_range, window=30, data_streams=3, send_address='/acc_xyz'):
-        self.client_utility = ClientUtility()
+    def __init__(self, input_range, output_range, msg_prefix=None, window=30, data_streams=3, send_address='/acc_xyz'):
+        self.client_utility = ClientUtility(msg_prefix)
         self.rangelimiter = RangeLimiter(input_range, output_range)
 
         self.send_address = send_address
@@ -60,20 +68,33 @@ class MotionHandler(object):
 
 
 class RawEEGHandler(object):
+
+    from .eeg_fft import EEG_fft
     
-    def __init__(self):
+    def __init__(self, process_fft=False, msg_prefix=None):
         self.send_address = '/raw_eeg'
-        self.client_utility = ClientUtility()
+        self.client_utility = ClientUtility(msg_prefix)
+        self.config = process_fft
+
+        if self.config == True:
+            self.eeg_fft = EEG_fft()
 
     def run(self, address: str, fixed_args, *args):
         self.client_utility.send_to_clients(fixed_args[0], self.send_address, args)
+
+        if self.config == True:
+            output = self.eeg_fft.run_fft(args)
+
+            
+
+
 
 
 
 class WaveHandler(object):
 
-    def __init__(self, input_range, output_range, window=30):
-        self.client_utility = ClientUtility()
+    def __init__(self, input_range, output_range, window=30, msg_prefix=None):
+        self.client_utility = ClientUtility(msg_prefix)
         self.rangelimiter = RangeLimiter(input_range, output_range)
 
         self.send_address = '/relative_wave'
