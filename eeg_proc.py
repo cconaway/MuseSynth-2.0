@@ -89,8 +89,6 @@ class RawEEGHandler(object):
                 print(output)
 
 
-
-
 class WaveHandler(object):
 
     def __init__(self, input_range, output_range, window=30, msg_prefix=None):

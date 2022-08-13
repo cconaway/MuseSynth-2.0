@@ -29,16 +29,20 @@ class EEG_fft(object):
         
         self.sensor_data = collections.deque()
         self.state = True
+        
+        self.dataques = []
+        for i in range(4):
+            self.data.append(collections.deque())
 
-    def _hamm_spectrum(self, s, window, hamm=True):
+    def _hamm_spectrum(self, s, window, hamm=False):
         s = s - np.mean(s)
         sh = window * s if hamm else s
 
-        sf = np.fft.rfft(sh)
+        #sf = np.fft.rfft(sh)
+        sf = scipy.signal.stft(sh, self.sr, window='hamm')
         return np.abs(sf)
 
     def _series_filter(self, data): #data = len2048
-        
         
         data_notch = scipy.signal.filtfilt(self.notch_a, self.notch_b, data)
         data_lp = scipy.signal.filtfilt(self.filt_lp, 1, data_notch, padlen=self.pad_len) 
@@ -57,6 +61,8 @@ class EEG_fft(object):
     def run_fft(self, args):
 
         test = args[0] #just doing one sensor
+        print(args)
+        '''
         if self.state == True:
             if len(self.sensor_data) == self.fft_len:
                 self.sensor_data.popleft()
@@ -74,5 +80,31 @@ class EEG_fft(object):
         else:
             pass
 
+        '''
+
+        #Start working on multi sensor thihng.
+
+        if self.state == True:
+            if len(self.data[0]) == self.fft_len:
+                for d, dataque in zip(args, self.dataques):
+                    dataque.popleft()
+                    dataque.append(d)
+                self.state = False
+
+                output = [self._spectrogram(sensor) for sensor in self.dataques]
+                print(len(output)) #Check if the output is the right shape.
+
+                for dataque in self.dataques:
+                    dataque.clear()
+                self.state = True
+
+                return output
+
+            else:
+                for d, dataque in zip(args, self.dataques):
+                    dataque.append(d)
+        else:
+            pass
+                    
 
         
