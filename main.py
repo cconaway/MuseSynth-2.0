@@ -21,16 +21,18 @@ def main():
 
     #######################################################
     dispatch = Dispatcher()
-    
+    '''
     acc = MotionHandler(input_range=ACC_INPUT, output_range=ACC_OUTPUT, window=2, msg_prefix=msg_prefix)
     dispatch.map("/muse/acc", acc.run, clients)
 
     gyro = MotionHandler(send_address='/gyro_xyz', input_range=GYRO_INPUT, output_range=GYRO_OUTPUT, msg_prefix=msg_prefix)
     dispatch.map("/muse/gyro", gyro.run, clients)
+    '''
 
-    raw_eeg = RawEEGHandler(msg_prefix=msg_prefix)
+    raw_eeg = RawEEGHandler(msg_prefix=msg_prefix, process_fft=True)
     dispatch.map("/muse/eeg", raw_eeg.run, clients)
     
+    '''
     wavehandler = WaveHandler(input_range=ALLWAVE_INPUT, output_range=ALLWAVE_OUPUT, msg_prefix=msg_prefix)
     dispatch.map("/muse/elements/horseshoe", wavehandler.run_hsi)
     wave_names = [('alpha_absolute',0),         
@@ -41,7 +43,7 @@ def main():
                     
     for wave in wave_names:
         dispatch.map(f"/muse/elements/{wave[0]}", wavehandler.run, clients, wave[1])
-    
+    '''
     #########################################################
 
     server = osc_server.ThreadingOSCUDPServer((server_ip, server_port), dispatch)

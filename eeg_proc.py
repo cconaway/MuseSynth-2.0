@@ -3,6 +3,9 @@ import numpy as np
 import math
 import time
 
+from eeg_fft import EEG_fft
+    
+
 class ClientUtility(object):
 
     def __init__(self, msg_prefix):
@@ -66,8 +69,6 @@ class MotionHandler(object):
 
 class RawEEGHandler(object):
 
-    from eeg_fft import EEG_fft
-    
     def __init__(self, process_fft=False, msg_prefix=None):
         self.send_address = '/raw_eeg'
         self.client_utility = ClientUtility(msg_prefix)
@@ -82,8 +83,10 @@ class RawEEGHandler(object):
         if self.config == True:
             output = self.eeg_fft.run_fft(args)
 
-            
-
+            if output is None:
+                pass
+            else:
+                print(output)
 
 
 
