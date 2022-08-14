@@ -8,7 +8,7 @@ from pythonosc.udp_client import SimpleUDPClient
 
 #Internal
 from eeg_proc import MotionHandler, RawEEGHandler, WaveHandler
-from constants import ACC_INPUT, ACC_OUTPUT, GYRO_INPUT, GYRO_OUTPUT, ALLWAVE_INPUT, ALLWAVE_OUPUT
+from range_parameters import ACC_INPUT, ACC_OUTPUT, GYRO_INPUT, GYRO_OUTPUT, ALLWAVE_INPUT, ALLWAVE_OUPUT
 from eeg_argparse import EEG_argparse
 
 
@@ -28,7 +28,7 @@ def main():
     gyro = MotionHandler(send_address='/gyro_xyz', input_range=GYRO_INPUT, output_range=GYRO_OUTPUT, msg_prefix=msg_prefix)
     dispatch.map("/muse/gyro", gyro.run, clients)
 
-    '''
+    ''' CURRENTLY NOT WORKING
     raw_eeg = RawEEGHandler(msg_prefix=msg_prefix, process_fft=True)
     dispatch.map("/muse/eeg", raw_eeg.run, clients)
     '''

@@ -5,8 +5,10 @@ import time
 
 class EEG_fft(object):
 
+    """Check the filters and figure out how to seperate the bands."""
+
     def __init__(self):
-        self.fft_len = 2048
+        self.fft_len = 1024
         self.sr = 256
         self.fr = self.sr/self.fft_len
 
@@ -18,8 +20,8 @@ class EEG_fft(object):
         self.order = 30 #Get coeffients
         self.pad_len = self.fft_len-self.order
 
-        lowpass = 14
-        highpass = 7
+        lowpass = 90
+        highpass = 0.5
         notch = 60
 
         self.filt_lp = scipy.signal.firwin(numtaps=self.order, cutoff=lowpass, fs=self.sr)
@@ -40,7 +42,8 @@ class EEG_fft(object):
 
         #sf = np.fft.rfft(sh)
         sf = scipy.signal.stft(sh, self.sr, window='hamm')
-        return np.abs(sf)
+
+        return np.abs(sf) #squared gives PSD?V2 Hz−1
 
     def _series_filter(self, data): #data = len2048
         
