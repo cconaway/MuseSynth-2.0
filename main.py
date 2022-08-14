@@ -28,10 +28,8 @@ def main():
     gyro = MotionHandler(send_address='/gyro_xyz', input_range=GYRO_INPUT, output_range=GYRO_OUTPUT, msg_prefix=msg_prefix)
     dispatch.map("/muse/gyro", gyro.run, clients)
 
-    ''' CURRENTLY NOT WORKING
-    raw_eeg = RawEEGHandler(msg_prefix=msg_prefix, process_fft=True)
+    raw_eeg = RawEEGHandler(msg_prefix=msg_prefix, process_fft=False)
     dispatch.map("/muse/eeg", raw_eeg.run, clients)
-    '''
     
     wavehandler = WaveHandler(input_range=ALLWAVE_INPUT, output_range=ALLWAVE_OUPUT, msg_prefix=msg_prefix)
     dispatch.map("/muse/elements/horseshoe", wavehandler.run_hsi)
