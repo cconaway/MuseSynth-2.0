@@ -47,9 +47,9 @@ def main():
         dispatch.map(f"/muse/elements/{wave[0]}", wavehandler.run, clients, wave[1])
 
     #Sensor Split Alpha
-    '''
-    alphasplit = SplitWaveHandler(wavename='alpha', input_range=ALLWAVE_INPUT, output_range=ALLWAVE_OUPUT, msg_prefix=msg_prefix)
-    dispatch.map("/muse/elements/alpha_absolute", alphasplit.run())'''
+    alphasplit = SplitWaveHandler(wave_name='alpha', input_range=ALLWAVE_INPUT, output_range=ALLWAVE_OUPUT, msg_prefix=msg_prefix)
+    dispatch.map("/muse/elements/alpha_absolute", alphasplit.run, clients)
+
     #########################################################
 
     server = osc_server.ThreadingOSCUDPServer((server_ip, server_port), dispatch)

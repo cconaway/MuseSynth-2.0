@@ -114,7 +114,6 @@ class WaveHandler(object):
         wave = fixed_args[1]
         output = [-1,-1,-1,-1,-1]
 
-
         data_from_signal = self._sum_ifsignal(args)
         if data_from_signal == 0.001:
             self.absolute_wavepower[wave] = 0.1
@@ -167,7 +166,6 @@ class SplitWaveHandler(object):
         self.rangelimiter = RangeLimiter(input_range, output_range)
 
         self.send_address = '{}_Tp9_Af7_Af8_Tp10'.format(wave_name)
-
         self.wave_data = [-1,-1,-1,-1] #sensor data
 
         self.window = window
@@ -177,17 +175,17 @@ class SplitWaveHandler(object):
 
     def run(self, address: str, fixed_args, *args):
         output = [-1,-1,-1,-1]
-        
+      
         #args = self.rangelimiter.squeeze(args)
         #print(args) #check the magnitude of the split.
         for i, que in enumerate(self.ques):
+            
             if len(que) == self.window:
                 que.popleft()
                 que.append(args[i])
-
             else:
                 que.append(args[i])
-
+                
             output[i]= sum(que)/len(que)
 
         self.client_utility.send_to_clients(fixed_args[0], self.send_address, output)
