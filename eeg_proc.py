@@ -63,7 +63,8 @@ class MotionHandler(object):
             else:
                 que.append(args[d])
             self.output[d]= sum(que)/len(que)
-
+        
+        self.output[2] = - self.output[2] #flipping sign here
         self.client_utility.send_to_clients(fixed_args[0], self.send_address, self.output)
 
 
