@@ -7,7 +7,7 @@ from pythonosc.dispatcher import Dispatcher
 from pythonosc.udp_client import SimpleUDPClient
 
 #Internal
-from eeg_proc import MotionHandler, RawEEGHandler, WaveHandler, SplitWaveHandler
+from eeg_proc import MotionHandler, RawEEGHandler, WaveHandler, SplitWaveHandle, ForeHeadHandler
 from range_parameters import ACC_INPUT, ACC_OUTPUT, GYRO_INPUT, GYRO_OUTPUT, ALLWAVE_INPUT, ALLWAVE_OUPUT
 import function_config
 from eeg_argparse import EEG_argparse
@@ -55,7 +55,11 @@ def main():
     if function_config.ALPHA_SPLIT == True:
         alphasplit = SplitWaveHandler(wave_name='alpha', input_range=ALLWAVE_INPUT, output_range=ALLWAVE_OUPUT, msg_prefix=msg_prefix)
         dispatch.map("/muse/elements/alpha_absolute", alphasplit.run, clients)
-    
+
+    if function_config.TOUCHING_HEAD == True:
+        forehead = ForeHeadHandler(msg_prefix=msg_prefix)
+        dispatch.map("/muse/elements/touching_forehead", forehead.run, clients)
+
     #########################################################
 
     server = osc_server.ThreadingOSCUDPServer((server_ip, server_port), dispatch)

@@ -5,7 +5,6 @@ import time
 
 from eeg_fft import EEG_fft
     
-
 class ClientUtility(object):
 
     def __init__(self, msg_prefix):
@@ -151,7 +150,7 @@ class WaveHandler(object):
 
     @staticmethod
     def _compute_relative(wave, absolute_wavepower):
-        
+
         try:
             output = (math.pow(10, absolute_wavepower[wave]) / 
                 (math.pow(10, absolute_wavepower[0]) +
@@ -197,10 +196,15 @@ class SplitWaveHandler(object):
 
         self.client_utility.send_to_clients(fixed_args[0], self.send_address, output)
 
-        
 
+class ForeHeadHandler(object):
 
+    def __init__(self, msg_prefix=None):
+        self.client_utility = ClientUtility(msg_prefix=msg_prefix)
+        self.send_address = 'touching_head'
 
+    def run(self, address: str, fixed_args, *args):
+        self.client_utility.send_to_clients(fixed_args[0], self.send_address, args)
         
 
         
