@@ -151,13 +151,19 @@ class WaveHandler(object):
 
     @staticmethod
     def _compute_relative(wave, absolute_wavepower):
+        
+        try:
+            output = (math.pow(10, absolute_wavepower[wave]) / 
+                (math.pow(10, absolute_wavepower[0]) +
+                math.pow(10, absolute_wavepower[1]) +
+                math.pow(10, absolute_wavepower[2]) +
+                math.pow(10, absolute_wavepower[3]) +
+                math.pow(10, absolute_wavepower[4]))) 
+        
+        except ZeroDivisionError:
+            output = 0
 
-        return (math.pow(10, absolute_wavepower[wave]) / 
-            (math.pow(10, absolute_wavepower[0]) +
-            math.pow(10, absolute_wavepower[1]) +
-            math.pow(10, absolute_wavepower[2]) +
-            math.pow(10, absolute_wavepower[3]) +
-            math.pow(10, absolute_wavepower[4]))) 
+        return output
 
 
 class SplitWaveHandler(object):
