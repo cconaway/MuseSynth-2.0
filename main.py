@@ -7,7 +7,7 @@ from pythonosc.dispatcher import Dispatcher
 from pythonosc.udp_client import SimpleUDPClient
 
 #Internal
-from eeg_proc import MotionHandler, RawEEGHandler, WaveHandler, SplitWaveHandle, ForeHeadHandler
+from eeg_proc import MotionHandler, RawEEGHandler, WaveHandler, SplitWaveHandler, ForeHeadHandler
 from range_parameters import ACC_INPUT, ACC_OUTPUT, GYRO_INPUT, GYRO_OUTPUT, ALLWAVE_INPUT, ALLWAVE_OUPUT
 import function_config
 from eeg_argparse import EEG_argparse

@@ -2,15 +2,27 @@ import collections
 import numpy as np
 import math
 import time
+from EEGsynth.function_config import RECORD_MINMAX
 
 from eeg_fft import EEG_fft
     
 class ClientUtility(object):
 
-    def __init__(self, msg_prefix):
+    def __init__(self, msg_prefix, record_minmax=False):
         self.msg_prefix = msg_prefix
+        self.record = record_minmax
+
+    def record_minmax(self, args):
+
+        """Function that will record different address mins and maxes after processing into a csv."""
+
+        pass
 
     def send_to_clients(self, clients, send_address, output):
+
+        if self.record == True:
+            self.record_minmax(send_address, output)
+
         for client in clients:
             #print('{}_{}_{}'.format(client, send_address, i), output)
             if self.msg_prefix == None: 
@@ -38,8 +50,8 @@ class RangeLimiter(object):
 
 class MotionHandler(object):
 
-    def __init__(self, input_range, output_range, msg_prefix=None, window=30, data_streams=3, send_address='/acc_xyz'):
-        self.client_utility = ClientUtility(msg_prefix)
+    def __init__(self, input_range, output_range, msg_prefix=None, window=30, data_streams=3, send_address='/acc_xyz', record_minmax=False):
+        self.client_utility = ClientUtility(msg_prefix, record_minmax=record_minmax)
         self.rangelimiter = RangeLimiter(input_range, output_range)
 
         self.send_address = send_address
@@ -69,9 +81,9 @@ class MotionHandler(object):
 
 class RawEEGHandler(object):
 
-    def __init__(self, process_fft=False, msg_prefix=None):
+    def __init__(self, process_fft=False, msg_prefix=None, record_minmax=False):
         self.send_address = '/raw_eeg'
-        self.client_utility = ClientUtility(msg_prefix)
+        self.client_utility = ClientUtility(msg_prefix, record_minmax=record_minmax)
         self.procfft = process_fft
 
         if self.procfft == True:
@@ -91,8 +103,8 @@ class RawEEGHandler(object):
 
 class WaveHandler(object):
 
-    def __init__(self, input_range, output_range, window=30, msg_prefix=None):
-        self.client_utility = ClientUtility(msg_prefix)
+    def __init__(self, input_range, output_range, window=30, msg_prefix=None, record_minmax=False):
+        self.client_utility = ClientUtility(msg_prefix, record_minmax=record_minmax)
         self.rangelimiter = RangeLimiter(input_range, output_range)
 
         self.send_address = '/relative_wave'
@@ -167,8 +179,8 @@ class WaveHandler(object):
 
 class SplitWaveHandler(object):
 
-    def __init__(self, input_range, output_range, wave_name='alpha', window=30, msg_prefix=None):
-        self.client_utility = ClientUtility(msg_prefix)
+    def __init__(self, input_range, output_range, wave_name='alpha', window=30, msg_prefix=None, record_minmax=False):
+        self.client_utility = ClientUtility(msg_prefix, record_minmax=record_minmax)
         self.rangelimiter = RangeLimiter(input_range, output_range)
 
         self.send_address = '{}_Tp9_Af7_Af8_Tp10'.format(wave_name)
