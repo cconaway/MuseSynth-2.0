@@ -2,7 +2,6 @@ import collections
 import numpy as np
 import math
 import time
-from EEGsynth.function_config import RECORD_MINMAX
 
 from eeg_fft import EEG_fft
     
