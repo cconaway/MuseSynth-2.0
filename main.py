@@ -18,8 +18,8 @@ def main():
     server_ip, server_port, client_port, msg_prefix = parser.run_parser() #Check Constants for Defaults
 
     #Fill with clients if you want
-    clients = [SimpleUDPClient('127.0.0.1', client_port), SimpleUDPClient('192.168.1.124', client_port)]
-    """Input method for making clients dynamically"""
+    clients = [SimpleUDPClient('127.0.0.1', client_port)]
+    """TOCREATE: Input method for making clients dynamically"""
 
     #######################################################
     dispatch = Dispatcher()
@@ -36,7 +36,7 @@ def main():
 
     #RawEEG
     if function_config.RAWEEG == True:
-        raw_eeg = RawEEGHandler(msg_prefix=msg_prefix, process_fft=False)
+        raw_eeg = RawEEGHandler(msg_prefix=msg_prefix, process_fft=True)
         dispatch.map("/muse/eeg", raw_eeg.run, clients)
 
     #Relative Wave Power
@@ -47,7 +47,8 @@ def main():
                         ('beta_absolute', 1),
                         ('gamma_absolute', 2),
                         ('delta_absolute', 3),
-                        ('theta_absolute', 4)]           
+                        ('theta_absolute', 4)]
+        
         for wave in wave_names:
             dispatch.map(f"/muse/elements/{wave[0]}", wavehandler.run, clients, wave[1])
 

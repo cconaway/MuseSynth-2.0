@@ -8,7 +8,7 @@ class EEG_fft(object):
     """Check the filters and figure out how to seperate the bands."""
 
     def __init__(self):
-        self.fft_len = 1024
+        self.fft_len = 256
         self.sr = 256
         self.fr = self.sr/self.fft_len
 
@@ -34,15 +34,15 @@ class EEG_fft(object):
         
         self.dataques = []
         for i in range(4):
-            self.data.append(collections.deque())
+            self.dataques.append(collections.deque())
 
     def _hamm_spectrum(self, s, window, hamm=False):
         s = s - np.mean(s)
         sh = window * s if hamm else s
 
-        #sf = np.fft.rfft(sh)
-        sf = scipy.signal.stft(sh, self.sr, window='hamm')
-
+        sf = np.fft.rfft(sh)
+        #sf = scipy.signal.stft(sh, self.sr, nperseg=1024, window='hamm')
+        
         return np.abs(sf) #squared gives PSD?V2 Hz−1
 
     def _series_filter(self, data): #data = len2048
@@ -58,51 +58,24 @@ class EEG_fft(object):
             return -1
 
         filt_data = self._series_filter(data)
-        data_fft = self._hamm_spectrum(filt_data, self.window)
+        data_fft = self._hamm_spectrum(s=filt_data, window=self.window)
+
         return data_fft
 
     def run_fft(self, args):
 
-        test = args[0] #just doing one sensor
-        print(args)
-        '''
+        output= np.zeros((4,129))
         if self.state == True:
-            if len(self.sensor_data) == self.fft_len:
-                self.sensor_data.popleft()
-                self.sensor_data.append(test)
-                self.state = False
-
-                output = self._spectrogram(self.sensor_data)
-                self.sensor_data.clear()
-                self.state = True
+            if len(self.dataques[0]) == self.fft_len:
+                self.state = False #Set the reciever to stop.
                 
-                return output
-
-            else:
-                self.sensor_data.append(test)
-        else:
-            pass
-
-        '''
-
-        #Start working on multi sensor thihng.
-
-        if self.state == True:
-            if len(self.data[0]) == self.fft_len:
-                for d, dataque in zip(args, self.dataques):
-                    dataque.popleft()
-                    dataque.append(d)
-                self.state = False
-
-                output = [self._spectrogram(sensor) for sensor in self.dataques]
-                print(len(output)) #Check if the output is the right shape.
+                s = [0,1,2,3]
+                for s, dataque in zip(s, self.dataques):
+                    output[s] = self._spectrogram(dataque)
 
                 for dataque in self.dataques:
                     dataque.clear()
                 self.state = True
-
-                return output
-
             else:
                 for d, dataque in zip(args, self.dataques):
                     dataque.append(d)
