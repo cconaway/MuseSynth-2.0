@@ -9,17 +9,19 @@ from pythonosc.udp_client import SimpleUDPClient
 #Internal
 from eeg_proc import MotionHandler, RawEEGHandler, WaveHandler, SplitWaveHandler, ForeHeadHandler
 from range_parameters import ACC_INPUT, ACC_OUTPUT, GYRO_INPUT, GYRO_OUTPUT, ALLWAVE_INPUT, ALLWAVE_OUPUT
+from server_constants import CLIENTS
 import function_config
 from eeg_argparse import EEG_argparse
 
 
 def main():
     parser = EEG_argparse()
-    server_ip, server_port, client_port, msg_prefix = parser.run_parser() #Check Constants for Defaults
+    server_ip, server_port, msg_prefix = parser.run_parser() #Check Constants for Defaults
 
-    #Fill with clients if you want
-    clients = [SimpleUDPClient('127.0.0.1', client_port)]
-    """TOCREATE: Input method for making clients dynamically"""
+    #Go To Server Constants to Add Clients
+    clients = []
+    for client in CLIENTS:
+        clients.append(SimpleUDPClient(client[0], client[1]))
 
     #######################################################
     dispatch = Dispatcher()
@@ -57,6 +59,7 @@ def main():
         alphasplit = SplitWaveHandler(wave_name='alpha', input_range=ALLWAVE_INPUT, output_range=ALLWAVE_OUPUT, msg_prefix=msg_prefix)
         dispatch.map("/muse/elements/alpha_absolute", alphasplit.run, clients)
 
+    #Touching Head
     if function_config.TOUCHING_HEAD == True:
         forehead = ForeHeadHandler(msg_prefix=msg_prefix)
         dispatch.map("/muse/elements/touching_forehead", forehead.run, clients)

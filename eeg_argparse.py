@@ -10,7 +10,6 @@ class EEG_argparse(object):
         self.parser.add_argument('-ip','--SERVER_IP', type=str, required=False)
         self.parser.add_argument('-serverport','--SERVER_PORT', type=int, required=False)
         self.parser.add_argument('-prefix','--msg_prefix', type=str, required=False)
-        self.parser.add_argument('-clientport', '--CLIENT_PORT', type=int, required=False)
 
     def run_parser(self):
         args = self.parser.parse_args()
@@ -25,17 +24,12 @@ class EEG_argparse(object):
         else:
             server_port = args.SERVER_PORT
 
-        if args.CLIENT_PORT == None:
-            client_port = DEFAULT_CLIENT_PORT
-        else:
-            client_port = args.CLIENT_PORT
-
         if args.msg_prefix == None:
             msg_prefix = None
         else:
             msg_prefix = args.msg_prefix
         
-        return server_ip, server_port, client_port, msg_prefix
+        return server_ip, server_port, msg_prefix
 
 
         
